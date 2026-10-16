@@ -1498,7 +1498,7 @@ class OracleDataSource extends import_data_source_manager.DatabaseDataSource {
     const prefix = (_a = this.options.tablePrefix) == null ? void 0 : _a.trim();
     const schema = this.schemaName();
     const objects = await this.execute(
-      `SELECT table_name AS TABLE_NAME, CASE WHEN table_type = 'VIEW' THEN 'VIEW' ELSE 'TABLE' END AS OBJECT_TYPE
+      `SELECT table_name AS "TABLE_NAME", CASE WHEN table_type = 'VIEW' THEN 'VIEW' ELSE 'TABLE' END AS "OBJECT_TYPE"
        FROM information_schema.tables
        WHERE table_schema = @schema AND table_type IN ('BASE TABLE', 'VIEW')
          AND (CAST(@tablePrefix AS text) IS NULL OR table_name LIKE CAST(@tablePrefix AS text))
@@ -1584,7 +1584,7 @@ class OracleDataSource extends import_data_source_manager.DatabaseDataSource {
     const result = [];
     for (const name of names) {
       const rows = await this.execute(
-        "SELECT table_name AS TABLE_NAME, CASE WHEN table_type = 'VIEW' THEN 'VIEW' ELSE 'TABLE' END AS OBJECT_TYPE FROM information_schema.tables WHERE table_schema = @schema AND table_name = @tableName AND table_type IN ('BASE TABLE', 'VIEW')",
+        `SELECT table_name AS "TABLE_NAME", CASE WHEN table_type = 'VIEW' THEN 'VIEW' ELSE 'TABLE' END AS "OBJECT_TYPE" FROM information_schema.tables WHERE table_schema = @schema AND table_name = @tableName AND table_type IN ('BASE TABLE', 'VIEW')`,
         { schema: this.schemaName(), tableName: name }
       );
       const object = row(rows[0]);
@@ -1602,11 +1602,11 @@ class OracleDataSource extends import_data_source_manager.DatabaseDataSource {
     const binds = { schema: object.schema, tableName: object.tableName };
     const [columns, constraintColumns] = await Promise.all([
       this.execute(
-        "SELECT column_name AS COLUMN_NAME, data_type AS DATA_TYPE, COALESCE(character_maximum_length, 0) AS DATA_LENGTH, numeric_precision AS DATA_PRECISION, numeric_scale AS DATA_SCALE, CASE WHEN is_nullable = 'YES' THEN 'Y' ELSE 'N' END AS NULLABLE, column_default AS DATA_DEFAULT FROM information_schema.columns WHERE table_schema = @schema AND table_name = @tableName ORDER BY ordinal_position",
+        `SELECT column_name AS "COLUMN_NAME", data_type AS "DATA_TYPE", COALESCE(character_maximum_length, 0) AS "DATA_LENGTH", numeric_precision AS "DATA_PRECISION", numeric_scale AS "DATA_SCALE", CASE WHEN is_nullable = 'YES' THEN 'Y' ELSE 'N' END AS "NULLABLE", column_default AS "DATA_DEFAULT" FROM information_schema.columns WHERE table_schema = @schema AND table_name = @tableName ORDER BY ordinal_position`,
         binds
       ),
       this.execute(
-        "SELECT kcu.column_name AS COLUMN_NAME, kcu.constraint_name AS CONSTRAINT_NAME, CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN 'P' ELSE 'U' END AS CONSTRAINT_TYPE, kcu.ordinal_position AS POSITION FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON kcu.constraint_schema = tc.constraint_schema AND kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema AND kcu.table_name = tc.table_name WHERE tc.table_schema = @schema AND tc.table_name = @tableName AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE') ORDER BY CONSTRAINT_TYPE, kcu.constraint_name, kcu.ordinal_position",
+        `SELECT kcu.column_name AS "COLUMN_NAME", kcu.constraint_name AS "CONSTRAINT_NAME", CASE WHEN tc.constraint_type = 'PRIMARY KEY' THEN 'P' ELSE 'U' END AS "CONSTRAINT_TYPE", kcu.ordinal_position AS "POSITION" FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON kcu.constraint_schema = tc.constraint_schema AND kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema AND kcu.table_name = tc.table_name WHERE tc.table_schema = @schema AND tc.table_name = @tableName AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE') ORDER BY "CONSTRAINT_TYPE", kcu.constraint_name, kcu.ordinal_position`,
         binds
       )
     ]);
@@ -1636,7 +1636,7 @@ class OracleDataSource extends import_data_source_manager.DatabaseDataSource {
     if (collections.length < 2) return;
     const collectionsByTableName = new Map(collections.map((collection) => [collection.tableName, collection]));
     const rows = await this.execute(
-      "SELECT child.constraint_name AS CONSTRAINT_NAME, child.table_name AS CHILD_TABLE_NAME, child.column_name AS CHILD_COLUMN_NAME, parent.table_name AS PARENT_TABLE_NAME, parent.column_name AS PARENT_COLUMN_NAME, child.ordinal_position AS POSITION FROM information_schema.key_column_usage child JOIN information_schema.referential_constraints rc ON rc.constraint_schema = child.constraint_schema AND rc.constraint_name = child.constraint_name JOIN information_schema.key_column_usage parent ON parent.constraint_schema = rc.unique_constraint_schema AND parent.constraint_name = rc.unique_constraint_name AND parent.ordinal_position = child.position_in_unique_constraint WHERE child.table_schema = @schema ORDER BY child.constraint_name, child.ordinal_position",
+      'SELECT child.constraint_name AS "CONSTRAINT_NAME", child.table_name AS "CHILD_TABLE_NAME", child.column_name AS "CHILD_COLUMN_NAME", parent.table_name AS "PARENT_TABLE_NAME", parent.column_name AS "PARENT_COLUMN_NAME", child.ordinal_position AS "POSITION" FROM information_schema.key_column_usage child JOIN information_schema.referential_constraints rc ON rc.constraint_schema = child.constraint_schema AND rc.constraint_name = child.constraint_name JOIN information_schema.key_column_usage parent ON parent.constraint_schema = rc.unique_constraint_schema AND parent.constraint_name = rc.unique_constraint_name AND parent.ordinal_position = child.position_in_unique_constraint WHERE child.table_schema = @schema ORDER BY child.constraint_name, child.ordinal_position',
       { schema: this.schemaName() }
     );
     const foreignKeys = /* @__PURE__ */ new Map();

@@ -57,6 +57,8 @@ describe('PostgresqlDataSource', () => {
       tablePrefix: 'nb_%',
       limit: 500,
     });
+    expect(execute.mock.calls[0][0]).toContain('AS "TABLE_NAME"');
+    expect(execute.mock.calls[0][0]).toContain('AS "OBJECT_TYPE"');
   });
 
   it('casts an omitted table prefix so PostgreSQL can infer the null bind type', async () => {
