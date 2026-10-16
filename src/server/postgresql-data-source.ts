@@ -1940,7 +1940,7 @@ export class OracleDataSource extends DatabaseDataSource {
       `SELECT table_name AS TABLE_NAME, CASE WHEN table_type = 'VIEW' THEN 'VIEW' ELSE 'TABLE' END AS OBJECT_TYPE
        FROM information_schema.tables
        WHERE table_schema = @schema AND table_type IN ('BASE TABLE', 'VIEW')
-         AND (@tablePrefix IS NULL OR table_name LIKE @tablePrefix)
+         AND (CAST(@tablePrefix AS text) IS NULL OR table_name LIKE CAST(@tablePrefix AS text))
        ORDER BY table_name LIMIT @limit`,
       { schema, tablePrefix: prefix ? `${prefix}%` : null, limit: MAX_OBJECTS },
     );

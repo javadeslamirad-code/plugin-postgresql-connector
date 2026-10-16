@@ -59,6 +59,16 @@ describe('PostgresqlDataSource', () => {
     });
   });
 
+  it('casts an omitted table prefix so PostgreSQL can infer the null bind type', async () => {
+    const dataSource = new PostgresqlDataSource(options);
+    const execute = vi.spyOn(dataSource, 'execute').mockResolvedValue([]);
+
+    await expect(dataSource.readTables()).resolves.toEqual([]);
+    expect(execute.mock.calls[0][0]).toContain(
+      'CAST(@tablePrefix AS text) IS NULL OR table_name LIKE CAST(@tablePrefix AS text)',
+    );
+  });
+
   it('maps metadata, keys, and foreign-key relations from PostgreSQL catalogs', async () => {
     const dataSource = new PostgresqlDataSource(options);
     vi.spyOn(dataSource, 'execute').mockImplementation(async (sql) => {
